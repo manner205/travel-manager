@@ -1,19 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MOCK_TRIPS, MOCK_EXPENSES } from "@/lib/mock-data";
+import { getTrips, getAllExpenses } from "@/lib/db";
 import { formatKRW, formatDate, getTripNights, getDday } from "@/lib/format";
-import { TripType, TripStatus } from "@/types/travel";
+import { Trip, Expense, TripType, TripStatus } from "@/types/travel";
 
 type Filter = "전체" | TripType | TripStatus;
 
 export default function TripsPage() {
   const [filter, setFilter] = useState<Filter>("전체");
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filters: Filter[] = ["전체", "예정", "완료", "해외", "국내"];
 
-  const filtered = MOCK_TRIPS.filter((t) => {
+  useEffect(() => {
+    Promise.all([getTrips(), getAllExpenses()])
+      .then(([t, e]) => {
+        setTrips(t);
+        setExpenses(e);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = trips.filter((t) => {
     if (filter === "전체") return true;
     if (filter === "예정" || filter === "완료" || filter === "진행중") return t.status === filter;
     return t.type === filter;
@@ -27,6 +39,14 @@ export default function TripsPage() {
     grouped[year].push(t);
   });
   const sortedYears = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-sm text-[var(--color-text-secondary)]">불러오는 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -52,6 +72,14 @@ export default function TripsPage() {
         </div>
       </div>
 
+      {/* 데이터 없을 때 */}
+      {filtered.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 space-y-3">
+          <div className="text-4xl">🗺️</div>
+          <p className="text-sm text-[var(--color-text-secondary)]">등록된 여행이 없어요</p>
+        </div>
+      )}
+
       {/* 연도별 그룹 */}
       {sortedYears.map((year) => (
         <section key={year} className="space-y-2">
@@ -61,14 +89,14 @@ export default function TripsPage() {
               {grouped[year].length}건 ·{" "}
               {formatKRW(
                 grouped[year].reduce((sum, t) => {
-                  return sum + MOCK_EXPENSES.filter((e) => e.tripId === t.id).reduce((s, e) => s + e.amount, 0);
+                  return sum + expenses.filter((e) => e.tripId === t.id).reduce((s, e) => s + e.amount, 0);
                 }, 0)
               )}
             </span>
           </div>
           <div className="space-y-2">
             {grouped[year].map((trip) => {
-              const total = MOCK_EXPENSES.filter((e) => e.tripId === trip.id).reduce((s, e) => s + e.amount, 0);
+              const total = expenses.filter((e) => e.tripId === trip.id).reduce((s, e) => s + e.amount, 0);
               const nights = getTripNights(trip.startDate, trip.endDate);
               const isUpcoming = trip.status === "예정";
               return (

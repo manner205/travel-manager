@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, use } from "react";
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { getTripById, getTripExpenses, getTripSchedules } from "@/lib/mock-data";
+import { getTripById, getTripExpenses, getTripSchedules } from "@/lib/db";
 import { formatFullKRW, formatKRW, formatDate, formatDateRange, getTripNights } from "@/lib/format";
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "@/lib/expense-colors";
-import { ExpenseCategory } from "@/types/travel";
+import { Trip, Expense, ScheduleItem, ExpenseCategory } from "@/types/travel";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 type Tab = "일정" | "경비";
@@ -13,10 +13,28 @@ type Tab = "일정" | "경비";
 export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [tab, setTab] = useState<Tab>("경비");
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const trip = getTripById(id);
-  const expenses = getTripExpenses(id);
-  const schedules = getTripSchedules(id);
+  useEffect(() => {
+    Promise.all([getTripById(id), getTripExpenses(id), getTripSchedules(id)])
+      .then(([t, e, s]) => {
+        setTrip(t);
+        setExpenses(e);
+        setSchedules(s);
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-sm text-[var(--color-text-secondary)]">불러오는 중...</div>
+      </div>
+    );
+  }
 
   if (!trip) {
     return (
