@@ -87,27 +87,27 @@ function ExpenseModal({
           </div>
         </div>
 
-        {/* 날짜 + 금액 */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => set("date", e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-[var(--color-text-secondary)]">금액 (원)</label>
-            <input
-              type="number"
-              value={form.amount}
-              onChange={(e) => set("amount", e.target.value)}
-              placeholder="0"
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
-            />
-          </div>
+        {/* 날짜 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
+          <input
+            type="date"
+            value={form.date}
+            onChange={(e) => set("date", e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
+          />
+        </div>
+
+        {/* 금액 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">금액 (원)</label>
+          <input
+            type="number"
+            value={form.amount}
+            onChange={(e) => set("amount", e.target.value)}
+            placeholder="0"
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
+          />
         </div>
 
         {/* 내용 */}
@@ -202,26 +202,26 @@ function ExpenseEditModal({
           </div>
         </div>
 
-        {/* 날짜 + 금액 */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => set("date", e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-[var(--color-text-secondary)]">금액 (원)</label>
-            <input
-              type="number"
-              value={form.amount}
-              onChange={(e) => set("amount", e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
-            />
-          </div>
+        {/* 날짜 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
+          <input
+            type="date"
+            value={form.date}
+            onChange={(e) => set("date", e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
+          />
+        </div>
+
+        {/* 금액 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">금액 (원)</label>
+          <input
+            type="number"
+            value={form.amount}
+            onChange={(e) => set("amount", e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
+          />
         </div>
 
         {/* 내용 */}
@@ -324,26 +324,26 @@ function ScheduleModal({
           </div>
         </div>
 
-        {/* 날짜 + 시간 */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => set("date", e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-[var(--color-text-secondary)]">시간 (선택)</label>
-            <input
-              type="time"
-              value={form.time}
-              onChange={(e) => set("time", e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-            />
-          </div>
+        {/* 날짜 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
+          <input
+            type="date"
+            value={form.date}
+            onChange={(e) => set("date", e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
+          />
+        </div>
+
+        {/* 시간 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">시간 (선택)</label>
+          <input
+            type="time"
+            value={form.time}
+            onChange={(e) => set("time", e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
+          />
         </div>
 
         {/* 제목 */}
