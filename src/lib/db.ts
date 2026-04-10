@@ -93,6 +93,103 @@ export async function getAllExpenses(): Promise<Expense[]> {
   return (data ?? []).map(toExpense);
 }
 
+// ── 쓰기 함수 ──────────────────────────────────────────────
+
+export async function createTrip(data: Omit<Trip, "id">): Promise<Trip> {
+  const { data: row, error } = await supabase
+    .from("trips")
+    .insert({
+      title: data.title,
+      type: data.type,
+      destination: data.destination,
+      country: data.country,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      travelers: data.travelers,
+      status: data.status,
+      cover_emoji: data.coverEmoji,
+      notes: data.notes,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return toTrip(row);
+}
+
+export async function updateTrip(id: string, data: Partial<Omit<Trip, "id">>): Promise<void> {
+  const { error } = await supabase
+    .from("trips")
+    .update({
+      ...(data.title !== undefined && { title: data.title }),
+      ...(data.type !== undefined && { type: data.type }),
+      ...(data.destination !== undefined && { destination: data.destination }),
+      ...(data.country !== undefined && { country: data.country }),
+      ...(data.startDate !== undefined && { start_date: data.startDate }),
+      ...(data.endDate !== undefined && { end_date: data.endDate }),
+      ...(data.travelers !== undefined && { travelers: data.travelers }),
+      ...(data.status !== undefined && { status: data.status }),
+      ...(data.coverEmoji !== undefined && { cover_emoji: data.coverEmoji }),
+      ...(data.notes !== undefined && { notes: data.notes }),
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteTrip(id: string): Promise<void> {
+  const { error } = await supabase.from("trips").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function createExpense(data: Omit<Expense, "id">): Promise<Expense> {
+  const { data: row, error } = await supabase
+    .from("expenses")
+    .insert({
+      trip_id: data.tripId,
+      date: data.date,
+      category: data.category,
+      description: data.description,
+      amount: data.amount,
+      currency: data.currency,
+      original_amount: data.originalAmount,
+      receipt_image: data.receiptImage,
+      paid_by: data.paidBy,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return toExpense(row);
+}
+
+export async function deleteExpense(id: string): Promise<void> {
+  const { error } = await supabase.from("expenses").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function createSchedule(data: Omit<ScheduleItem, "id">): Promise<ScheduleItem> {
+  const { data: row, error } = await supabase
+    .from("schedules")
+    .insert({
+      trip_id: data.tripId,
+      date: data.date,
+      time: data.time,
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      reservation_number: data.reservationNumber,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return toSchedule(row);
+}
+
+export async function deleteSchedule(id: string): Promise<void> {
+  const { error } = await supabase.from("schedules").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ── 통계 ────────────────────────────────────────────────────
+
 export async function getAnnualExpenseStats(): Promise<AnnualExpenseStat[]> {
   const expenses = await getAllExpenses();
   const yearMap: Record<string, { total: number; tripIds: Set<string> }> = {};

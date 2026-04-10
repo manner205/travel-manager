@@ -52,7 +52,12 @@ export default function TripsPage() {
     <div className="space-y-3">
       {/* 헤더 + 필터 */}
       <div className="space-y-2 pt-2">
-        <h2 className="text-base font-bold text-white">여행 목록</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-white">여행 목록</h2>
+          <Link href="/trips/new" className="rounded-xl bg-[var(--color-accent)] px-3 py-1.5 text-xs font-bold text-black">
+            + 새 여행
+          </Link>
+        </div>
         <div className="overflow-x-auto" data-no-swipe>
           <div className="flex gap-1 rounded-xl bg-[var(--color-card)] p-1 border border-[var(--color-border)] w-max">
             {filters.map((f) => (
