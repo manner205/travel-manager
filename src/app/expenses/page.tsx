@@ -25,6 +25,7 @@ export default function ExpensesPage() {
 
   const [startYear, setStartYear] = useState<string | null>(null);
   const [endYear, setEndYear] = useState<string | null>(null);
+  const [tripTypeFilter, setTripTypeFilter] = useState<"전체" | "국내" | "해외">("전체");
 
   useEffect(() => {
     Promise.all([getTrips(), getAllExpenses(), getAnnualExpenseStats()])
@@ -64,18 +65,22 @@ export default function ExpensesPage() {
     return year >= (lo ?? "") && year <= (hi ?? "");
   };
 
-  const filteredExpenses = expenses.filter((e) => {
-    if (isAll) return true;
-    const y = e.date.slice(0, 4);
-    if (!endYear) return y === startYear;
-    return y >= (lo ?? "") && y <= (hi ?? "");
-  });
+  const tripTypeMap = Object.fromEntries(trips.map((t) => [t.id, t.type]));
 
   const filteredTrips = trips.filter((t) => {
-    if (isAll) return true;
-    const y = t.startDate.slice(0, 4);
-    if (!endYear) return y === startYear;
-    return y >= (lo ?? "") && y <= (hi ?? "");
+    const yearMatch = isAll || (() => {
+      const y = t.startDate.slice(0, 4);
+      if (!endYear) return y === startYear;
+      return y >= (lo ?? "") && y <= (hi ?? "");
+    })();
+    const typeMatch = tripTypeFilter === "전체" || t.type === tripTypeFilter;
+    return yearMatch && typeMatch;
+  });
+
+  const filteredTripIds = new Set(filteredTrips.map((t) => t.id));
+
+  const filteredExpenses = expenses.filter((e) => {
+    return filteredTripIds.has(e.tripId);
   });
 
   const totalAmount = filteredExpenses.reduce((s, e) => s + e.amount, 0);
@@ -97,11 +102,17 @@ export default function ExpensesPage() {
       color: CATEGORY_COLORS[cat as ExpenseCategory],
     }));
 
-  const barData = annualStats.map((s) => ({
-    year: s.year,
-    amount: s.totalAmount,
-    trips: s.tripCount,
-  }));
+  // 타입 필터 반영한 연도별 바 차트 데이터
+  const barData = (() => {
+    const yearMap: Record<string, number> = {};
+    expenses.forEach((e) => {
+      const tType = tripTypeMap[e.tripId];
+      if (tripTypeFilter !== "전체" && tType !== tripTypeFilter) return;
+      const y = e.date.slice(0, 4);
+      yearMap[y] = (yearMap[y] || 0) + e.amount;
+    });
+    return Object.entries(yearMap).sort(([a], [b]) => a.localeCompare(b)).map(([year, amount]) => ({ year, amount }));
+  })();
 
   const rangeLabel = isAll
     ? "전체"
@@ -161,6 +172,23 @@ export default function ExpensesPage() {
             종료 연도를 선택하면 범위로 조회됩니다. 같은 연도를 다시 누르면 해제됩니다.
           </p>
         )}
+
+        {/* 여행 타입 필터 */}
+        <div className="flex gap-1 rounded-xl bg-[var(--color-card)] p-1 border border-[var(--color-border)]">
+          {(["전체", "국내", "해외"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTripTypeFilter(t)}
+              className={`flex-1 rounded-lg py-1.5 text-xs font-medium transition-colors ${
+                tripTypeFilter === t
+                  ? "bg-[var(--color-accent)] text-black"
+                  : "text-[var(--color-text-secondary)] hover:text-white"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 데이터 없을 때 */}
