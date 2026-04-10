@@ -39,11 +39,43 @@
 - `src/app/trips/[id]/page.tsx` — 여행 상세 (경비 탭 + 일정 탭)
 - `src/app/expenses/page.tsx` — 경비 통계 (연도 범위 필터, 차트)
 
-**다음 개발 예정**
-- Supabase 연동 (실 데이터 저장/조회)
-- 여행/경비 추가/수정/삭제 기능
-- 영수증 사진 업로드 + Claude AI 자동 분석
-- 가족 공유 로그인 (Supabase Auth)
-- Vercel 배포
+---
+
+## 2026-04-10 (개발 2차)
+
+### Supabase 연동
+- Supabase 프로젝트 생성 (Region: Northeast Asia Seoul)
+- DB 테이블 생성: `trips`, `expenses`, `schedules`
+- RLS 정책 설정 (인증 추가 전 임시 전체 허용)
+- `src/lib/supabase.ts` — Supabase 클라이언트 초기화
+- `src/lib/db.ts` — 읽기/쓰기 함수 전체 구현
+  - 읽기: getTrips, getTripById, getTripExpenses, getTripSchedules, getAllExpenses, getAnnualExpenseStats
+  - 쓰기: createTrip, updateTrip, deleteTrip, createExpense, deleteExpense, createSchedule, deleteSchedule
+- 4개 페이지 mock-data → Supabase 실데이터로 교체 (useEffect 비동기 로딩)
+- 샘플 데이터 2건 DB 직접 삽입 (일본 오사카, 베트남 다낭 + 경비 5건)
+
+### GitHub 연동
+- 저장소: https://github.com/manner205/travel-manager.git
+- 브랜치: main
+
+### Vercel 배포
+- GitHub 저장소 연동 완료
+- 환경변수 설정 (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
+- 배포 완료 — push 시 자동 배포
+
+### 여행/경비/일정 CRUD 구현
+- `src/app/trips/new/page.tsx` — 여행 추가 폼 (이모지, 타입, 날짜, 인원 등)
+- `src/app/trips/[id]/edit/page.tsx` — 여행 수정 폼
+- 여행 상세 페이지 기능 추가:
+  - 수정/삭제 버튼
+  - 경비 추가 모달 (카테고리, 날짜, 금액, 내용)
+  - 경비 삭제 (호버 시 ✕ 버튼)
+  - 일정 추가 모달 (종류, 날짜, 시간, 제목, 설명, 예약번호)
+  - 일정 삭제 (호버 시 ✕ 버튼)
 
 ---
+
+## 다음 개발 예정
+- 가족 공유 로그인 (Supabase Auth)
+- 영수증 사진 업로드 (Claude API 비용 이슈로 보류)
+- Vercel 배포 도메인 커스텀 설정 (선택)
