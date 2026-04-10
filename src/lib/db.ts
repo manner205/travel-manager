@@ -160,6 +160,19 @@ export async function createExpense(data: Omit<Expense, "id">): Promise<Expense>
   return toExpense(row);
 }
 
+export async function updateExpense(id: string, data: Partial<Omit<Expense, "id" | "tripId">>): Promise<void> {
+  const { error } = await supabase
+    .from("expenses")
+    .update({
+      ...(data.date !== undefined && { date: data.date }),
+      ...(data.category !== undefined && { category: data.category }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.amount !== undefined && { amount: data.amount }),
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
 export async function deleteExpense(id: string): Promise<void> {
   const { error } = await supabase.from("expenses").delete().eq("id", id);
   if (error) throw error;

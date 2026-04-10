@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getTripById, getTripExpenses, getTripSchedules, deleteTrip, createExpense, deleteExpense, createSchedule, deleteSchedule } from "@/lib/db";
+import { getTripById, getTripExpenses, getTripSchedules, deleteTrip, createExpense, updateExpense, deleteExpense, createSchedule, deleteSchedule } from "@/lib/db";
 import { formatFullKRW, formatKRW, formatDate, formatDateRange, getTripNights } from "@/lib/format";
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "@/lib/expense-colors";
 import { Trip, Expense, ScheduleItem, ExpenseCategory, ScheduleItemType } from "@/types/travel";
@@ -127,6 +127,119 @@ function ExpenseModal({
           className="w-full rounded-2xl bg-[var(--color-accent)] py-2.5 text-sm font-bold text-black disabled:opacity-50"
         >
           {saving ? "저장 중..." : "추가"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ExpenseEditModal({
+  expense,
+  onClose,
+  onSaved,
+}: {
+  expense: Expense;
+  onClose: () => void;
+  onSaved: (updated: Expense) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    date: expense.date,
+    category: expense.category,
+    description: expense.description,
+    amount: String(expense.amount),
+  });
+  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleSave = async () => {
+    if (!form.description || !form.amount) {
+      alert("내용과 금액을 입력해주세요.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateExpense(expense.id, {
+        date: form.date,
+        category: form.category as ExpenseCategory,
+        description: form.description,
+        amount: Number(form.amount.replace(/,/g, "")),
+      });
+      onSaved({ ...expense, ...form, amount: Number(form.amount.replace(/,/g, "")), category: form.category as ExpenseCategory });
+    } catch {
+      alert("저장 실패. 다시 시도해주세요.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60" onClick={onClose}>
+      <div
+        className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] px-4 pt-4 pb-6 space-y-3 overflow-y-auto overflow-x-hidden max-h-[85vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-white">경비 수정</h3>
+          <button onClick={onClose} className="text-[var(--color-text-secondary)] hover:text-white text-lg">✕</button>
+        </div>
+
+        {/* 카테고리 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">카테고리</label>
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                onClick={() => set("category", c)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                  form.category === c
+                    ? "bg-[var(--color-accent)] text-black"
+                    : "bg-[var(--color-card)] text-[var(--color-text-secondary)] hover:text-white"
+                }`}
+              >
+                {CATEGORY_ICONS[c]} {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 날짜 + 금액 */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => set("date", e.target.value)}
+              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-[var(--color-text-secondary)]">금액 (원)</label>
+            <input
+              type="number"
+              value={form.amount}
+              onChange={(e) => set("amount", e.target.value)}
+              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* 내용 */}
+        <div className="space-y-1">
+          <label className="text-xs text-[var(--color-text-secondary)]">내용</label>
+          <input
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
+          />
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full rounded-2xl bg-[var(--color-accent)] py-2.5 text-sm font-bold text-black disabled:opacity-50"
+        >
+          {saving ? "저장 중..." : "수정 완료"}
         </button>
       </div>
     </div>
@@ -288,6 +401,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -526,9 +640,13 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
                   {expenses
                     .sort((a, b) => a.date.localeCompare(b.date))
                     .map((expense, i) => (
-                      <div key={expense.id} className={`flex items-center gap-3 px-4 py-2.5 group ${
-                        i < expenses.length - 1 ? "border-b border-[var(--color-border)]" : ""
-                      }`}>
+                      <div
+                        key={expense.id}
+                        onClick={() => setEditingExpense(expense)}
+                        className={`flex items-center gap-3 px-4 py-2.5 group cursor-pointer active:bg-white/5 ${
+                          i < expenses.length - 1 ? "border-b border-[var(--color-border)]" : ""
+                        }`}
+                      >
                         <span className="text-base">{CATEGORY_ICONS[expense.category]}</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-white truncate">{expense.description}</div>
@@ -541,7 +659,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
                             {formatKRW(expense.amount)}
                           </div>
                           <button
-                            onClick={() => handleDeleteExpense(expense.id)}
+                            onClick={(e) => { e.stopPropagation(); handleDeleteExpense(expense.id); }}
                             className="text-red-400/50 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             ✕
@@ -642,6 +760,18 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
           onSaved={(e) => {
             setExpenses((prev) => [...prev, e]);
             setShowExpenseModal(false);
+          }}
+        />
+      )}
+
+      {/* 경비 수정 모달 */}
+      {editingExpense && (
+        <ExpenseEditModal
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSaved={(updated) => {
+            setExpenses((prev) => prev.map((e) => e.id === updated.id ? updated : e));
+            setEditingExpense(null);
           }}
         />
       )}
