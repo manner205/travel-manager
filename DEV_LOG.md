@@ -75,7 +75,24 @@
 
 ---
 
+## 2026-04-10 (개발 3차)
+
+### 로그인 기능 구현 (Supabase Auth)
+- `@supabase/ssr` 설치 (쿠키 기반 세션 관리)
+- `src/lib/supabase-browser.ts` — 브라우저용 Supabase 클라이언트
+- `src/lib/supabase-server.ts` — 서버용 Supabase 클라이언트
+- `src/middleware.ts` — 미인증 사용자 자동으로 /login 리다이렉트
+- `src/app/login/page.tsx` — 이메일/비밀번호 로그인 페이지
+- `src/contexts/auth-context.tsx` — 인증 상태 관리 Context
+- `src/components/layout/Header.tsx` — 로그인 사용자 이름 + 로그아웃 버튼
+- BottomNav — 로그인 페이지에서 숨김 처리
+
+### 가족 계정 등록 방법
+- Supabase 대시보드 → Authentication → Users → Invite user
+- 가족 구성원 이메일로 초대 발송
+
+---
+
 ## 다음 개발 예정
-- 가족 공유 로그인 (Supabase Auth)
 - 영수증 사진 업로드 (Claude API 비용 이슈로 보류)
 - Vercel 배포 도메인 커스텀 설정 (선택)
