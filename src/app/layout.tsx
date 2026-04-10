@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "@/components/layout/BottomNav";
+import { AuthProvider } from "@/contexts/auth-context";
+import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: "Travel Manager",
@@ -15,12 +17,15 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full">
       <body className="min-h-full bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-lg min-h-screen pb-20">
-          <main className="px-4 pt-4">
-            {children}
-          </main>
-        </div>
-        <BottomNav />
+        <AuthProvider>
+          <div className="mx-auto max-w-lg min-h-screen pb-20">
+            <Header />
+            <main className="px-4 pt-2">
+              {children}
+            </main>
+          </div>
+          <BottomNav />
+        </AuthProvider>
       </body>
     </html>
   );

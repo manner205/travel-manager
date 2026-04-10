@@ -12,6 +12,8 @@ const NAV_ITEMS = [
 export default function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname === "/login") return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border)] bg-[var(--color-card)]">
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-2">
