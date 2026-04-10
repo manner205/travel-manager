@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getTrips, getAllExpenses, getAnnualExpenseStats } from "@/lib/db";
-import { formatKRW, formatFullKRW, formatDate } from "@/lib/format";
+import { formatKRW, formatFullKRW, formatDate, getTripNights } from "@/lib/format";
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "@/lib/expense-colors";
 import { Trip, Expense, AnnualExpenseStat, ExpenseCategory } from "@/types/travel";
 import {
@@ -67,7 +67,9 @@ export default function ExpensesPage() {
 
   const tripTypeMap = Object.fromEntries(trips.map((t) => [t.id, t.type]));
 
-  const filteredTrips = trips.filter((t) => {
+  // 완료된 여행만 통계에 포함 (예정 여행 제외)
+  const completedTrips = trips.filter((t) => {
+    if (t.status !== "완료") return false;
     const yearMatch = isAll || (() => {
       const y = t.startDate.slice(0, 4);
       if (!endYear) return y === startYear;
@@ -77,16 +79,14 @@ export default function ExpensesPage() {
     return yearMatch && typeMatch;
   });
 
-  const filteredTripIds = new Set(filteredTrips.map((t) => t.id));
+  const completedTripIds = new Set(completedTrips.map((t) => t.id));
 
-  const filteredExpenses = expenses.filter((e) => {
-    return filteredTripIds.has(e.tripId);
-  });
+  const filteredExpenses = expenses.filter((e) => completedTripIds.has(e.tripId));
 
   const totalAmount = filteredExpenses.reduce((s, e) => s + e.amount, 0);
-  const completedTrips = filteredTrips.filter((t) => t.status === "완료");
   const tripCount = completedTrips.length;
-  const avgPerTrip = tripCount > 0 ? Math.round(totalAmount / tripCount) : 0;
+  const totalNights = completedTrips.reduce((s, t) => s + getTripNights(t.startDate, t.endDate), 0);
+  const avgPerNight = totalNights > 0 ? Math.round(totalAmount / totalNights) : 0;
 
   const categoryTotals = filteredExpenses.reduce((acc, e) => {
     acc[e.category] = (acc[e.category] || 0) + e.amount;
@@ -208,12 +208,12 @@ export default function ExpensesPage() {
               <div className="mt-0.5 text-sm font-bold text-[var(--color-highlight)]">{formatKRW(totalAmount)}</div>
             </div>
             <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2">
-              <div className="text-[10px] text-[var(--color-text-secondary)]">여행 횟수</div>
+              <div className="text-[10px] text-[var(--color-text-secondary)]">여행 ({totalNights}박)</div>
               <div className="mt-0.5 text-sm font-bold text-white">{tripCount}회</div>
             </div>
             <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2">
-              <div className="text-[10px] text-[var(--color-text-secondary)]">평균 경비</div>
-              <div className="mt-0.5 text-sm font-bold text-white">{formatKRW(avgPerTrip)}</div>
+              <div className="text-[10px] text-[var(--color-text-secondary)]">1박 평균</div>
+              <div className="mt-0.5 text-sm font-bold text-white">{formatKRW(avgPerNight)}</div>
             </div>
           </div>
 
@@ -249,7 +249,7 @@ export default function ExpensesPage() {
                 </ResponsiveContainer>
               </div>
               <div className="mt-2 grid grid-cols-4 gap-1 border-t border-[var(--color-border)] pt-2">
-                {annualStats.slice().reverse().map((s) => {
+                {barData.slice().reverse().map((s) => {
                   const inRange = isYearInRange(s.year);
                   return (
                     <button key={s.year} onClick={() => handleYearClick(s.year)}
@@ -258,7 +258,7 @@ export default function ExpensesPage() {
                       }`}>
                       <div className="text-[9px] text-[var(--color-text-secondary)]">{s.year}</div>
                       <div className={`text-[10px] font-semibold ${inRange ? "text-[var(--color-highlight)]" : "text-white"}`}>
-                        {shortLabel(s.totalAmount)}
+                        {shortLabel(s.amount)}
                       </div>
                     </button>
                   );
