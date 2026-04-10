@@ -57,9 +57,9 @@ function ExpenseModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60" onClick={onClose}>
       <div
-        className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] p-4 space-y-3"
+        className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] p-4 space-y-3 overflow-y-auto max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -181,9 +181,9 @@ function ScheduleModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60" onClick={onClose}>
       <div
-        className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] p-4 space-y-3"
+        className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] p-4 space-y-3 overflow-y-auto max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
