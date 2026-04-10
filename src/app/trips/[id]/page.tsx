@@ -90,12 +90,14 @@ function ExpenseModal({
         {/* 날짜 */}
         <div className="space-y-1">
           <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => set("date", e.target.value)}
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-          />
+          <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]">
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => set("date", e.target.value)}
+              className="w-full max-w-full px-3 py-2 text-sm text-white bg-transparent focus:outline-none"
+            />
+          </div>
         </div>
 
         {/* 금액 */}
@@ -137,12 +139,15 @@ function ExpenseEditModal({
   expense,
   onClose,
   onSaved,
+  onDeleted,
 }: {
   expense: Expense;
   onClose: () => void;
   onSaved: (updated: Expense) => void;
+  onDeleted: (id: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     date: expense.date,
     category: expense.category,
@@ -168,6 +173,18 @@ function ExpenseEditModal({
     } catch {
       alert("저장 실패. 다시 시도해주세요.");
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("이 경비를 삭제할까요?")) return;
+    setDeleting(true);
+    try {
+      await deleteExpense(expense.id);
+      onDeleted(expense.id);
+    } catch {
+      alert("삭제 실패. 다시 시도해주세요.");
+      setDeleting(false);
     }
   };
 
@@ -205,12 +222,14 @@ function ExpenseEditModal({
         {/* 날짜 */}
         <div className="space-y-1">
           <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => set("date", e.target.value)}
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-          />
+          <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]">
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => set("date", e.target.value)}
+              className="w-full max-w-full px-3 py-2 text-sm text-white bg-transparent focus:outline-none"
+            />
+          </div>
         </div>
 
         {/* 금액 */}
@@ -234,13 +253,22 @@ function ExpenseEditModal({
           />
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full rounded-2xl bg-[var(--color-accent)] py-2.5 text-sm font-bold text-black disabled:opacity-50"
-        >
-          {saving ? "저장 중..." : "수정 완료"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex-1 rounded-2xl border border-red-400/40 py-2.5 text-sm font-bold text-red-400 disabled:opacity-50"
+          >
+            {deleting ? "삭제 중..." : "삭제"}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-[2] rounded-2xl bg-[var(--color-accent)] py-2.5 text-sm font-bold text-black disabled:opacity-50"
+          >
+            {saving ? "저장 중..." : "수정 완료"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -771,6 +799,10 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
           onClose={() => setEditingExpense(null)}
           onSaved={(updated) => {
             setExpenses((prev) => prev.map((e) => e.id === updated.id ? updated : e));
+            setEditingExpense(null);
+          }}
+          onDeleted={(id) => {
+            setExpenses((prev) => prev.filter((e) => e.id !== id));
             setEditingExpense(null);
           }}
         />
