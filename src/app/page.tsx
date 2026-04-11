@@ -40,11 +40,19 @@ export default function DashboardPage() {
     .filter((e) => e.date.startsWith(thisYear))
     .reduce((s, e) => s + e.amount, 0);
 
-  const thisYearTripCount = trips.filter(
+  const thisYearCompletedTrips = trips.filter(
     (t) => t.startDate.startsWith(thisYear) && t.status === "완료"
-  ).length;
+  );
+  const thisYearTripCount = thisYearCompletedTrips.length;
+  const thisYearNights = thisYearCompletedTrips.reduce(
+    (s, t) => s + getTripNights(t.startDate, t.endDate), 0
+  );
 
-  const lastYearStat = annualStats.find((s) => s.year === String(today.getFullYear() - 1));
+  const lastYear = String(today.getFullYear() - 1);
+  const lastYearStat = annualStats.find((s) => s.year === lastYear);
+  const lastYearNights = trips
+    .filter((t) => t.startDate.startsWith(lastYear) && t.status === "완료")
+    .reduce((s, t) => s + getTripNights(t.startDate, t.endDate), 0);
 
   if (loading) {
     return (
@@ -111,7 +119,7 @@ export default function DashboardPage() {
           </div>
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-3">
             <div className="text-[10px] text-[var(--color-text-secondary)]">완료된 여행</div>
-            <div className="mt-1 text-base font-bold text-white">{thisYearTripCount}회</div>
+            <div className="mt-1 text-base font-bold text-white">{thisYearTripCount}회 · {thisYearNights}박</div>
           </div>
           {lastYearStat && (
             <>
@@ -121,7 +129,7 @@ export default function DashboardPage() {
               </div>
               <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-3">
                 <div className="text-[10px] text-[var(--color-text-secondary)]">{lastYearStat.year}년 여행 횟수</div>
-                <div className="mt-1 text-base font-bold text-white">{lastYearStat.tripCount}회</div>
+                <div className="mt-1 text-base font-bold text-white">{lastYearStat.tripCount}회 · {lastYearNights}박</div>
               </div>
             </>
           )}
