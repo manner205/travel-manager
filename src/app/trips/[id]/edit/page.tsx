@@ -6,7 +6,7 @@ import { getTripById, updateTrip } from "@/lib/db";
 import { TripType, TripStatus } from "@/types/travel";
 import DateRangePicker from "@/components/DateRangePicker";
 
-const EMOJIS = ["✈️","🏖️","🏔️","🗺️","🌊","🇯🇵","🇹🇭","🇻🇳","🇺🇸","🇪🇺","🏨","🎡","🦁","🏙️","🌸","🍊","🎿"];
+const EMOJIS = ["✈️","🏖️","🏔️","🗺️","🌊","🇯🇵","🇹🇭","🇻🇳","🇺🇸","🇪🇺","🇮🇩","🏨","🎡","🦁","🏙️","🌸","🍊","🎿"];
 
 export default function EditTripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

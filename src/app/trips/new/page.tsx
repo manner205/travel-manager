@@ -6,7 +6,7 @@ import { createTrip } from "@/lib/db";
 import { TripType, TripStatus, ExpenseCategory } from "@/types/travel";
 import DateRangePicker from "@/components/DateRangePicker";
 
-const EMOJIS = ["✈️","🏖️","🏔️","🗺️","🌊","🇯🇵","🇹🇭","🇻🇳","🇺🇸","🇪🇺","🏨","🎡","🦁","🏙️","🌸","🍊","🎿"];
+const EMOJIS = ["✈️","🏖️","🏔️","🗺️","🌊","🇯🇵","🇹🇭","🇻🇳","🇺🇸","🇪🇺","🇮🇩","🏨","🎡","🦁","🏙️","🌸","🍊","🎿"];
 
 export default function NewTripPage() {
   const router = useRouter();
