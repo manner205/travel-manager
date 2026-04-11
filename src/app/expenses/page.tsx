@@ -26,6 +26,7 @@ export default function ExpensesPage() {
   const [startYear, setStartYear] = useState<string | null>(null);
   const [endYear, setEndYear] = useState<string | null>(null);
   const [tripTypeFilter, setTripTypeFilter] = useState<"전체" | "국내" | "해외">("전체");
+  const [expandedTripId, setExpandedTripId] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([getTrips(), getAllExpenses(), getAnnualExpenseStats()])
@@ -324,21 +325,58 @@ export default function ExpensesPage() {
               completedTrips
                 .sort((a, b) => b.startDate.localeCompare(a.startDate))
                 .map((trip, i) => {
-                  const total = expenses.filter((e) => e.tripId === trip.id).reduce((s, e) => s + e.amount, 0);
+                  const tripExpenses = expenses
+                    .filter((e) => e.tripId === trip.id)
+                    .sort((a, b) => a.date.localeCompare(b.date));
+                  const total = tripExpenses.reduce((s, e) => s + e.amount, 0);
+                  const isExpanded = expandedTripId === trip.id;
+                  const isLast = i === completedTrips.length - 1;
                   return (
-                    <div key={trip.id} className={`flex items-center gap-3 px-4 py-2.5 ${
-                      i < completedTrips.length - 1 ? "border-b border-[var(--color-border)]" : ""
-                    }`}>
-                      <span className="text-xl">{trip.coverEmoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium text-white truncate">{trip.title}</div>
-                        <div className="text-[10px] text-[var(--color-text-secondary)]">
-                          {formatDate(trip.startDate)} · {trip.type} · {trip.travelers}명
+                    <div key={trip.id} className={!isLast || isExpanded ? "border-b border-[var(--color-border)]" : ""}>
+                      {/* 여행 행 */}
+                      <div
+                        onClick={() => setExpandedTripId(isExpanded ? null : trip.id)}
+                        className="flex items-center gap-3 px-4 py-2.5 cursor-pointer active:bg-white/5"
+                      >
+                        <span className="text-xl">{trip.coverEmoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-white truncate">{trip.title}</div>
+                          <div className="text-[10px] text-[var(--color-text-secondary)]">
+                            {formatDate(trip.startDate)} · {trip.type} · {trip.travelers}명
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="text-sm font-semibold text-[var(--color-highlight)]">
+                            {formatKRW(total)}
+                          </div>
+                          <span className="text-[10px] text-[var(--color-text-secondary)]">
+                            {isExpanded ? "▲" : "▼"}
+                          </span>
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-[var(--color-highlight)] flex-shrink-0">
-                        {formatKRW(total)}
-                      </div>
+                      {/* 세부 내역 */}
+                      {isExpanded && (
+                        <div className="bg-[var(--color-bg)]/60 border-t border-[var(--color-border)]">
+                          {tripExpenses.length === 0 ? (
+                            <div className="px-4 py-3 text-[11px] text-[var(--color-text-secondary)]">경비 내역 없음</div>
+                          ) : (
+                            tripExpenses.map((e, ei) => (
+                              <div key={e.id} className={`flex items-center gap-3 px-5 py-2 ${ei < tripExpenses.length - 1 ? "border-b border-[var(--color-border)]/50" : ""}`}>
+                                <span className="text-sm">{CATEGORY_ICONS[e.category]}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-[11px] text-white truncate">{e.description}</div>
+                                  <div className="text-[9px] text-[var(--color-text-secondary)]">
+                                    {formatDate(e.date)} · {e.category}
+                                  </div>
+                                </div>
+                                <div className="text-xs font-medium text-[var(--color-highlight)] flex-shrink-0">
+                                  {formatKRW(e.amount)}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })
