@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "@/components/layout/BottomNav";
+import SwipeNavigator from "@/components/layout/SwipeNavigator";
 import { AuthProvider } from "@/contexts/auth-context";
 import Header from "@/components/layout/Header";
 
@@ -20,9 +21,11 @@ export default function RootLayout({
         <AuthProvider>
           <div className="mx-auto max-w-lg min-h-screen pb-20">
             <Header />
-            <main className="px-4 pt-2">
-              {children}
-            </main>
+            <SwipeNavigator>
+              <main className="px-4 pt-2">
+                {children}
+              </main>
+            </SwipeNavigator>
           </div>
           <BottomNav />
         </AuthProvider>
