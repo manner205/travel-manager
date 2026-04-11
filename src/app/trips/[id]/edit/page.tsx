@@ -189,13 +189,6 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         </div>
       </div>
 
-      {/* 메모 */}
-      <div className="space-y-1">
-        <label className="text-xs text-[var(--color-text-secondary)]">메모</label>
-        <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2}
-          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none resize-none" />
-      </div>
-
       <button onClick={handleSubmit} disabled={saving}
         className="w-full rounded-2xl bg-[var(--color-accent)] py-3 text-sm font-bold text-black transition-opacity disabled:opacity-50">
         {saving ? "저장 중..." : "수정 완료"}

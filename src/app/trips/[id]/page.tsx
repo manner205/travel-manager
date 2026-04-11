@@ -3,10 +3,10 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getTripById, getTripExpenses, getTripSchedules, deleteTrip, copyTrip, createExpense, updateExpense, deleteExpense, createSchedule, deleteSchedule } from "@/lib/db";
+import { getTripById, getTripExpenses, updateTrip, deleteTrip, copyTrip, createExpense, updateExpense, deleteExpense } from "@/lib/db";
 import { formatFullKRW, formatKRW, formatDate, formatDateRange, getTripNights } from "@/lib/format";
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "@/lib/expense-colors";
-import { Trip, Expense, ScheduleItem, ExpenseCategory, ScheduleItemType } from "@/types/travel";
+import { Trip, Expense, ExpenseCategory } from "@/types/travel";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 type Tab = "일정" | "경비";
@@ -276,171 +276,26 @@ function ExpenseEditModal({
   );
 }
 
-const SCHEDULE_TYPES: ScheduleItemType[] = ["이동", "숙소", "식사", "관광", "기타"];
-
-function ScheduleModal({
-  tripId,
-  tripDate,
-  onClose,
-  onSaved,
-}: {
-  tripId: string;
-  tripDate: string;
-  onClose: () => void;
-  onSaved: (s: ScheduleItem) => void;
-}) {
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    date: tripDate,
-    time: "",
-    title: "",
-    description: "",
-    type: "관광" as ScheduleItemType,
-    reservationNumber: "",
-  });
-  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
-
-  const handleSave = async () => {
-    if (!form.title) {
-      alert("일정 제목을 입력해주세요.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const schedule = await createSchedule({
-        tripId,
-        date: form.date,
-        time: form.time || undefined,
-        title: form.title,
-        description: form.description || undefined,
-        type: form.type,
-        reservationNumber: form.reservationNumber || undefined,
-      });
-      onSaved(schedule);
-    } catch {
-      alert("저장 실패. 다시 시도해주세요.");
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end bg-black/60" onClick={onClose}>
-      <div
-        className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] px-4 pt-4 pb-6 space-y-3 overflow-y-auto overflow-x-hidden max-h-[85vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">일정 추가</h3>
-          <button onClick={onClose} className="text-[var(--color-text-secondary)] hover:text-white text-lg">✕</button>
-        </div>
-
-        {/* 타입 */}
-        <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-secondary)]">종류</label>
-          <div className="flex flex-wrap gap-1.5">
-            {SCHEDULE_TYPES.map((t) => (
-              <button
-                key={t}
-                onClick={() => set("type", t)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-                  form.type === t
-                    ? "bg-[var(--color-accent)] text-black"
-                    : "bg-[var(--color-card)] text-[var(--color-text-secondary)] hover:text-white"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 날짜 */}
-        <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-secondary)]">날짜</label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => set("date", e.target.value)}
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-          />
-        </div>
-
-        {/* 시간 */}
-        <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-secondary)]">시간 (선택)</label>
-          <input
-            type="time"
-            value={form.time}
-            onChange={(e) => set("time", e.target.value)}
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white focus:border-[var(--color-accent)] focus:outline-none"
-          />
-        </div>
-
-        {/* 제목 */}
-        <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-secondary)]">제목 *</label>
-          <input
-            value={form.title}
-            onChange={(e) => set("title", e.target.value)}
-            placeholder="예: 인천공항 출발"
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
-          />
-        </div>
-
-        {/* 설명 */}
-        <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-secondary)]">설명 (선택)</label>
-          <input
-            value={form.description}
-            onChange={(e) => set("description", e.target.value)}
-            placeholder="예: 빈펄 리조트 체크인"
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
-          />
-        </div>
-
-        {/* 예약번호 */}
-        <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-secondary)]">예약번호 (선택)</label>
-          <input
-            value={form.reservationNumber}
-            onChange={(e) => set("reservationNumber", e.target.value)}
-            placeholder="예: VJ 872"
-            className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none"
-          />
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full rounded-2xl bg-[var(--color-accent)] py-2.5 text-sm font-bold text-black disabled:opacity-50"
-        >
-          {saving ? "저장 중..." : "추가"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("경비");
   const [trip, setTrip] = useState<Trip | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [memo, setMemo] = useState("");
+  const [savingMemo, setSavingMemo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [copying, setCopying] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    Promise.all([getTripById(id), getTripExpenses(id), getTripSchedules(id)])
-      .then(([t, e, s]) => {
+    Promise.all([getTripById(id), getTripExpenses(id)])
+      .then(([t, e]) => {
         setTrip(t);
         setExpenses(e);
-        setSchedules(s);
+        setMemo(t?.notes ?? "");
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -475,10 +330,16 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
     setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
   };
 
-  const handleDeleteSchedule = async (scheduleId: string) => {
-    if (!confirm("이 일정을 삭제할까요?")) return;
-    await deleteSchedule(scheduleId);
-    setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
+  const handleSaveMemo = async () => {
+    setSavingMemo(true);
+    try {
+      await updateTrip(id, { notes: memo });
+      setTrip((prev) => prev ? { ...prev, notes: memo } : prev);
+    } catch {
+      alert("저장 실패. 다시 시도해주세요.");
+    } finally {
+      setSavingMemo(false);
+    }
   };
 
   if (loading) {
@@ -516,11 +377,6 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
       color: CATEGORY_COLORS[cat as ExpenseCategory],
     }));
 
-  const scheduleByDate: Record<string, typeof schedules> = {};
-  schedules.forEach((s) => {
-    if (!scheduleByDate[s.date]) scheduleByDate[s.date] = [];
-    scheduleByDate[s.date].push(s);
-  });
 
   return (
     <>
@@ -723,83 +579,26 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         )}
 
-        {/* 일정 탭 */}
+        {/* 일정 탭 - 메모장 */}
         {tab === "일정" && (
-          <div className="space-y-3">
-            {/* 일정 추가 버튼 */}
+          <div className="space-y-2">
+            <textarea
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder={"여행 일정, 예약번호, 준비물 등\n자유롭게 메모하세요 ✏️"}
+              rows={14}
+              className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-3 text-sm text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none resize-none leading-relaxed"
+            />
             <button
-              onClick={() => setShowScheduleModal(true)}
-              className="w-full rounded-xl border border-dashed border-[var(--color-accent)]/40 bg-[var(--color-accent)]/5 py-2.5 text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 transition-colors"
+              onClick={handleSaveMemo}
+              disabled={savingMemo}
+              className="w-full rounded-2xl bg-[var(--color-accent)] py-2.5 text-sm font-bold text-black disabled:opacity-50"
             >
-              + 일정 추가
+              {savingMemo ? "저장 중..." : "저장"}
             </button>
-
-            {schedules.length === 0 ? (
-              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] py-10 text-center text-sm text-[var(--color-text-secondary)]">
-                등록된 일정이 없어요
-              </div>
-            ) : (
-              Object.entries(scheduleByDate)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([date, items]) => (
-                  <div key={date} className="space-y-1.5">
-                    <div className="text-xs font-semibold text-[var(--color-text-secondary)]">{formatDate(date)}</div>
-                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden">
-                      {items.map((item, i) => (
-                        <div key={item.id} className={`flex items-start gap-3 px-4 py-2.5 group ${
-                          i < items.length - 1 ? "border-b border-[var(--color-border)]" : ""
-                        }`}>
-                          <div className="text-[10px] text-[var(--color-text-secondary)] w-10 flex-shrink-0 pt-0.5">
-                            {item.time || ""}
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-xs font-medium text-white">{item.title}</div>
-                            {item.description && (
-                              <div className="text-[10px] text-[var(--color-text-secondary)] mt-0.5">{item.description}</div>
-                            )}
-                            {item.reservationNumber && (
-                              <div className="text-[10px] text-[var(--color-accent)] mt-0.5">예약번호: {item.reservationNumber}</div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
-                            <span className={`text-[9px] rounded-full px-1.5 py-0.5 ${
-                              item.type === "이동" ? "bg-blue-400/20 text-blue-400" :
-                              item.type === "숙소" ? "bg-purple-400/20 text-purple-400" :
-                              item.type === "식사" ? "bg-green-400/20 text-green-400" :
-                              item.type === "관광" ? "bg-orange-400/20 text-orange-400" :
-                              "bg-gray-400/20 text-gray-400"
-                            }`}>
-                              {item.type}
-                            </span>
-                            <button
-                              onClick={() => handleDeleteSchedule(item.id)}
-                              className="text-red-400/50 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))
-            )}
           </div>
         )}
       </div>
-
-      {/* 일정 추가 모달 */}
-      {showScheduleModal && (
-        <ScheduleModal
-          tripId={id}
-          tripDate={trip.startDate}
-          onClose={() => setShowScheduleModal(false)}
-          onSaved={(s) => {
-            setSchedules((prev) => [...prev, s]);
-            setShowScheduleModal(false);
-          }}
-        />
-      )}
 
       {/* 경비 추가 모달 */}
       {showExpenseModal && (
