@@ -140,6 +140,57 @@ export async function deleteTrip(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function copyTrip(id: string): Promise<Trip> {
+  const [trip, expenses, schedules] = await Promise.all([
+    getTripById(id),
+    getTripExpenses(id),
+    getTripSchedules(id),
+  ]);
+  if (!trip) throw new Error("여행을 찾을 수 없어요");
+
+  const newTrip = await createTrip({
+    title: `${trip.title} (복사)`,
+    type: trip.type,
+    destination: trip.destination,
+    country: trip.country,
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    travelers: trip.travelers,
+    status: "예정",
+    coverEmoji: trip.coverEmoji,
+    notes: trip.notes,
+  });
+
+  await Promise.all([
+    ...expenses.map((e) =>
+      createExpense({
+        tripId: newTrip.id,
+        date: e.date,
+        category: e.category,
+        description: e.description,
+        amount: e.amount,
+        currency: e.currency,
+        originalAmount: e.originalAmount,
+        receiptImage: e.receiptImage,
+        paidBy: e.paidBy,
+      })
+    ),
+    ...schedules.map((s) =>
+      createSchedule({
+        tripId: newTrip.id,
+        date: s.date,
+        time: s.time,
+        title: s.title,
+        description: s.description,
+        type: s.type,
+        reservationNumber: s.reservationNumber,
+      })
+    ),
+  ]);
+
+  return newTrip;
+}
+
 export async function createExpense(data: Omit<Expense, "id">): Promise<Expense> {
   const { data: row, error } = await supabase
     .from("expenses")

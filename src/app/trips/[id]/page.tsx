@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getTripById, getTripExpenses, getTripSchedules, deleteTrip, createExpense, updateExpense, deleteExpense, createSchedule, deleteSchedule } from "@/lib/db";
+import { getTripById, getTripExpenses, getTripSchedules, deleteTrip, copyTrip, createExpense, updateExpense, deleteExpense, createSchedule, deleteSchedule } from "@/lib/db";
 import { formatFullKRW, formatKRW, formatDate, formatDateRange, getTripNights } from "@/lib/format";
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "@/lib/expense-colors";
 import { Trip, Expense, ScheduleItem, ExpenseCategory, ScheduleItemType } from "@/types/travel";
@@ -430,6 +430,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [copying, setCopying] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -451,6 +452,18 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
     } catch {
       alert("삭제 실패. 다시 시도해주세요.");
       setDeleting(false);
+    }
+  };
+
+  const handleCopyTrip = async () => {
+    if (!confirm("이 여행을 복사할까요? 경비와 일정이 모두 복사됩니다.")) return;
+    setCopying(true);
+    try {
+      const newTrip = await copyTrip(id);
+      router.push(`/trips/${newTrip.id}/edit`);
+    } catch {
+      alert("복사 실패. 다시 시도해주세요.");
+      setCopying(false);
     }
   };
 
@@ -517,6 +530,13 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
               ← 목록으로
             </Link>
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyTrip}
+                disabled={copying}
+                className="rounded-lg px-2.5 py-1 text-xs text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:text-white transition-colors disabled:opacity-50"
+              >
+                {copying ? "복사 중..." : "복사"}
+              </button>
               <Link
                 href={`/trips/${id}/edit`}
                 className="rounded-lg px-2.5 py-1 text-xs text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:text-white transition-colors"
