@@ -13,6 +13,7 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [memoTrip, setMemoTrip] = useState<Trip | null>(null);
 
   const filters: Filter[] = ["전체", "예정", "완료", "해외", "국내"];
 
@@ -105,12 +106,12 @@ export default function TripsPage() {
               const nights = getTripNights(trip.startDate, trip.endDate);
               const isUpcoming = trip.status === "예정";
               return (
-                <Link key={trip.id} href={`/trips/${trip.id}`}>
-                  <div className={`rounded-xl border p-3 transition-colors cursor-pointer ${
+                <div key={trip.id} className={`rounded-xl border p-3 transition-colors ${
                     isUpcoming
-                      ? "border-[var(--color-accent)]/30 bg-[var(--color-accent-dim)] hover:border-[var(--color-accent)]/60"
-                      : "border-[var(--color-border)] bg-[var(--color-card)] hover:bg-[var(--color-card-hover)]"
+                      ? "border-[var(--color-accent)]/30 bg-[var(--color-accent-dim)]"
+                      : "border-[var(--color-border)] bg-[var(--color-card)]"
                   }`}>
+                  <Link href={`/trips/${trip.id}`}>
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{trip.coverEmoji}</span>
                       <div className="flex-1 min-w-0">
@@ -137,13 +138,39 @@ export default function TripsPage() {
                         <div className="text-[10px] text-[var(--color-text-secondary)] mt-0.5">{trip.status}</div>
                       </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  {trip.notes && (
+                    <button
+                      onClick={() => setMemoTrip(trip)}
+                      className="mt-2 w-full text-left rounded-lg bg-white/5 px-3 py-1.5 text-[10px] text-[var(--color-text-secondary)] hover:bg-white/10 transition-colors line-clamp-1"
+                    >
+                      📝 {trip.notes}
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
         </section>
       ))}
+      {/* 메모 바텀시트 */}
+      {memoTrip && (
+        <div className="fixed inset-0 z-[60] flex items-end bg-black/60" onClick={() => setMemoTrip(null)}>
+          <div
+            className="w-full max-w-lg mx-auto rounded-t-2xl border-t border-[var(--color-border)] bg-[var(--color-bg)] px-4 pt-4 pb-8 max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <span className="text-base mr-2">{memoTrip.coverEmoji}</span>
+                <span className="text-sm font-bold text-white">{memoTrip.title}</span>
+              </div>
+              <button onClick={() => setMemoTrip(null)} className="text-[var(--color-text-secondary)] hover:text-white text-lg">✕</button>
+            </div>
+            <pre className="text-sm text-white whitespace-pre-wrap leading-relaxed font-sans">{memoTrip.notes}</pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
