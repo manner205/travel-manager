@@ -58,7 +58,7 @@ export default function DashboardPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-lg font-bold text-white">Travel Manager ✈️</h1>
+          <h1 className="text-lg font-bold text-white">Young's Family Travel Manager ✈️</h1>
           <p className="text-xs text-[var(--color-text-secondary)]">
             {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일
           </p>
