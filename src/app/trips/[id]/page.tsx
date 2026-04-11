@@ -137,11 +137,13 @@ function ExpenseModal({
 
 function ExpenseEditModal({
   expense,
+  tripStartDate,
   onClose,
   onSaved,
   onDeleted,
 }: {
   expense: Expense;
+  tripStartDate: string;
   onClose: () => void;
   onSaved: (updated: Expense) => void;
   onDeleted: (id: string) => void;
@@ -149,7 +151,7 @@ function ExpenseEditModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
-    date: expense.date,
+    date: tripStartDate,
     category: expense.category,
     description: expense.description,
     amount: String(expense.amount),
@@ -816,6 +818,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
       {editingExpense && (
         <ExpenseEditModal
           expense={editingExpense}
+          tripStartDate={trip.startDate}
           onClose={() => setEditingExpense(null)}
           onSaved={(updated) => {
             setExpenses((prev) => prev.map((e) => e.id === updated.id ? updated : e));
