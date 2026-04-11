@@ -46,7 +46,13 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
     });
   }, [id]);
 
+  const today = new Date().toISOString().slice(0, 10);
   const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleDateChange = (start: string, end: string) => {
+    const autoStatus: TripStatus = end && end < today ? "완료" : "예정";
+    setForm((f) => ({ ...f, startDate: start, endDate: end, status: autoStatus }));
+  };
 
   const handleSubmit = async () => {
     if (!form.title || !form.destination || !form.startDate || !form.endDate) {
@@ -166,7 +172,7 @@ export default function EditTripPage({ params }: { params: Promise<{ id: string 
         <DateRangePicker
           startDate={form.startDate}
           endDate={form.endDate}
-          onChange={(start, end) => setForm((f) => ({ ...f, startDate: start, endDate: end }))}
+          onChange={handleDateChange}
         />
       </div>
 
