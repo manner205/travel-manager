@@ -105,10 +105,15 @@ export default function TripsPage() {
               const total = expenses.filter((e) => e.tripId === trip.id).reduce((s, e) => s + e.amount, 0);
               const nights = getTripNights(trip.startDate, trip.endDate);
               const isUpcoming = trip.status === "예정";
+              const isAbroad = trip.type === "해외";
               return (
                 <div key={trip.id} className={`rounded-xl border p-3 transition-colors ${
-                    isUpcoming
+                    isUpcoming && isAbroad
+                      ? "border-amber-400/50 bg-amber-400/5"
+                      : isUpcoming
                       ? "border-[var(--color-accent)]/30 bg-[var(--color-accent-dim)]"
+                      : isAbroad
+                      ? "border-amber-400/40 bg-amber-400/5"
                       : "border-[var(--color-border)] bg-[var(--color-card)]"
                   }`}>
                   <Link href={`/trips/${trip.id}`}>
@@ -119,7 +124,7 @@ export default function TripsPage() {
                           <span className="text-sm font-medium text-white truncate">{trip.title}</span>
                           <span className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
                             trip.type === "해외"
-                              ? "bg-[var(--color-accent)]/20 text-[var(--color-accent)]"
+                              ? "bg-amber-400/20 text-amber-400"
                               : "bg-emerald-400/20 text-emerald-400"
                           }`}>
                             {trip.type}
