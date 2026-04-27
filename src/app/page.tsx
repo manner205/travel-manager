@@ -92,10 +92,12 @@ export default function DashboardPage() {
         <button
           onClick={handleNotionSync}
           disabled={syncing}
-          className="flex items-center gap-1.5 rounded-xl bg-[#2e2e2e] border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#3a3a3a] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-shrink-0 flex flex-col items-center gap-0.5 rounded-xl border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/10 px-3 py-2 hover:bg-[var(--color-accent)]/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className="text-sm">{syncing ? "⏳" : "🔄"}</span>
-          {syncing ? "동기화 중..." : "Notion 동기화"}
+          <span className="text-lg leading-none">{syncing ? "⏳" : "🔄"}</span>
+          <span className="text-[10px] font-medium whitespace-nowrap text-[var(--color-accent)]">
+            {syncing ? "동기화 중" : "Notion 동기화"}
+          </span>
         </button>
       </div>
 
