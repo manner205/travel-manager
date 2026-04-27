@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const NOTION_DB_TRAVEL = process.env.NOTION_DB_TRAVEL!;
 const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -236,10 +238,15 @@ export async function POST() {
       expMap[e.trip_id] = [...(expMap[e.trip_id] ?? []), e];
     }
 
+    // 5개씩 병렬 업로드 (Notion API 레이트 리밋 고려)
     let success = 0;
-    for (const trip of newTrips) {
-      const ok = await createNotionRow(trip, expMap[trip.id] ?? []);
-      if (ok) success++;
+    const BATCH = 5;
+    for (let i = 0; i < newTrips.length; i += BATCH) {
+      const batch = newTrips.slice(i, i + BATCH);
+      const results = await Promise.all(
+        batch.map((trip) => createNotionRow(trip, expMap[trip.id] ?? []))
+      );
+      success += results.filter(Boolean).length;
     }
 
     return NextResponse.json({
