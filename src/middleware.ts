@@ -4,8 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // /login 은 항상 통과
-  if (pathname.startsWith("/login")) {
+  // 인증 불필요 경로
+  if (pathname.startsWith("/login") || pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 

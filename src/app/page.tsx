@@ -16,6 +16,23 @@ export default function DashboardPage() {
   const [annualStats, setAnnualStats] = useState<AnnualExpenseStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [memoTrip, setMemoTrip] = useState<Trip | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  async function handleNotionSync() {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/notion-sync", { method: "POST" });
+      const data = await res.json();
+      setSyncResult({ ok: data.ok, message: data.message });
+    } catch {
+      setSyncResult({ ok: false, message: "동기화 중 오류가 발생했습니다." });
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncResult(null), 4000);
+    }
+  }
 
   useEffect(() => {
     Promise.all([getTrips(), getAllExpenses(), getAnnualExpenseStats()])
@@ -72,7 +89,26 @@ export default function DashboardPage() {
             {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일
           </p>
         </div>
+        <button
+          onClick={handleNotionSync}
+          disabled={syncing}
+          className="flex items-center gap-1.5 rounded-xl bg-[#2e2e2e] border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#3a3a3a] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className="text-sm">{syncing ? "⏳" : "🔄"}</span>
+          {syncing ? "동기화 중..." : "Notion 동기화"}
+        </button>
       </div>
+
+      {/* 동기화 결과 토스트 */}
+      {syncResult && (
+        <div className={`rounded-xl px-4 py-2.5 text-xs font-medium text-center transition-all ${
+          syncResult.ok
+            ? "bg-green-500/20 border border-green-500/40 text-green-400"
+            : "bg-red-500/20 border border-red-500/40 text-red-400"
+        }`}>
+          {syncResult.ok ? "✅ " : "❌ "}{syncResult.message}
+        </div>
+      )}
 
       {/* 예정된 여행 */}
       {upcomingTrips.length > 0 && (
